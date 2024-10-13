@@ -94,6 +94,7 @@ class VideoApp:
         try:
             ftp = FTP(xbox_ip)
             ftp.login(user='xbox', passwd='xbox')
+            ftp_path = '/C/'
             
             file_name = os.path.basename(local_video_path).strip().replace('\n', '').replace('\r', '')
             xbox_video_path = f"/C/BootAnims/XMV Player/bootanim.xmv"
