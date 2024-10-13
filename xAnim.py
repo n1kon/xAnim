@@ -10,11 +10,9 @@ class VideoApp:
         self.root = root
         self.root.title("xAmin")
         
-        # Apply a theme
         self.style = ttk.Style()
         self.style.theme_use('clam')
         
-        # Frame to hold the buttons and entry
         self.button_frame = ttk.Frame(root, padding="10 10 10 10")
         self.button_frame.pack(side=tk.TOP, fill=tk.X)
         
@@ -43,7 +41,6 @@ class VideoApp:
         
         self.listbox.bind('<Double-1>', self.play_video)
         
-        # Frame around the video player with enhanced styling
         self.video_outer_frame = ttk.Frame(root, padding="10 10 10 10", relief="raised", borderwidth=5, style="Video.TFrame")
         self.video_outer_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
         
@@ -53,9 +50,8 @@ class VideoApp:
         self.instance = vlc.Instance()
         self.player = self.instance.media_player_new()
         
-        self.video_paths = {}  # Dictionary to store full paths with file names as keys
+        self.video_paths = {}  
         
-        # Style configuration
         self.style.configure("Video.TFrame", background="#333333", relief="raised", borderwidth=5)
         self.style.configure("InnerVideo.TFrame", background="#000000")
     
@@ -87,22 +83,18 @@ class VideoApp:
         selected_file = self.listbox.get(self.listbox.curselection())
         local_video_path = self.video_paths[selected_file]
         
-        # Stop the video playback
         self.player.stop()
         
-        # Get the Xbox IP address from the entry
         xbox_ip = self.ip_entry.get()
         
         if not xbox_ip:
             messagebox.showerror("Error", "Please enter the Xbox IP address.")
             return
         
-        # FTP transfer
         try:
             ftp = FTP(xbox_ip)
             ftp.login(user='xbox', passwd='xbox')
             
-            # Specify the path on the Xbox where the file should be stored
             file_name = os.path.basename(local_video_path).strip().replace('\n', '').replace('\r', '')
             xbox_video_path = f"/C/BootAnims/XMV Player/bootanim.xmv"
             
