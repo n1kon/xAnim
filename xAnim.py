@@ -28,6 +28,18 @@ class VideoApp:
         self.ip_entry = ttk.Entry(self.button_frame)
         self.ip_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         
+        # Combobox for selecting the drive label
+        self.drive_label_var = tk.StringVar(value="/C/")
+        self.drive_label_combobox = ttk.Combobox(self.button_frame, textvariable=self.drive_label_var, state="readonly")
+        self.drive_label_combobox['values'] = ("/C/", "/HDD0-C/")
+        self.drive_label_combobox.pack(side=tk.LEFT, padx=5)
+        self.drive_label_combobox.bind("<<ComboboxSelected>>", self.on_drive_or_mode_change)
+        
+        # Checkbox for Passive Mode
+        self.passive_mode_var = tk.BooleanVar(value=True)
+        self.passive_mode_checkbox = ttk.Checkbutton(self.button_frame, text="Use Passive Mode", variable=self.passive_mode_var, command=self.on_drive_or_mode_change)
+        self.passive_mode_checkbox.pack(side=tk.LEFT, padx=5)
+        
         self.listbox_frame = ttk.Frame(root, padding="10 10 10 10")
         self.listbox_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
@@ -67,6 +79,11 @@ class VideoApp:
                     self.video_paths[file_name_without_ext] = os.path.join(folder_path, file_name)
     
     def play_video(self, event):
+        # Check if an item is selected
+        if not self.listbox.curselection():
+            messagebox.showerror("Error", "Please select a video to play.")
+            return
+        
         selected_file = self.listbox.get(self.listbox.curselection())
         video_path = self.video_paths[selected_file]
         self.show_video(video_path)
@@ -79,6 +96,11 @@ class VideoApp:
         self.player.play()
     
     def transfer_to_xbox(self):
+        # Check if an item is selected
+        if not self.listbox.curselection():
+            messagebox.showerror("Error", "Please select a video from the list.")
+            return
+
         # Get the selected file from the listbox
         selected_file = self.listbox.get(self.listbox.curselection())
         local_video_path = self.video_paths[selected_file]
@@ -94,11 +116,31 @@ class VideoApp:
         try:
             ftp = FTP(xbox_ip)
             ftp.login(user='xbox', passwd='xbox')
-            ftp_path = '/C/'
             
-            file_name = os.path.basename(local_video_path).strip().replace('\n', '').replace('\r', '')
-            xbox_video_path = f"/C/BootAnims/XMV Player/bootanim.xmv"
+            # Set passive mode based on checkbox
+            ftp.set_pasv(self.passive_mode_var.get())
             
+            # Get the selected drive label
+            ftp_path = self.drive_label_var.get()
+            
+            # Ensure the target directory exists
+            xbox_video_dir = f"{ftp_path}BootAnims/XMV Player/"
+            try:
+                ftp.cwd(xbox_video_dir)
+            except Exception:
+                # If the directory does not exist, create it
+                parts = xbox_video_dir.strip("/").split("/")
+                current_path = ""
+                for part in parts:
+                    current_path += f"/{part}"
+                    try:
+                        ftp.cwd(current_path)
+                    except Exception:
+                        ftp.mkd(current_path)
+                        ftp.cwd(current_path)
+            
+            # Transfer the video file
+            xbox_video_path = f"{xbox_video_dir}bootanim.xmv"
             with open(local_video_path, 'rb') as file:
                 ftp.storbinary(f'STOR {xbox_video_path}', file)
             
@@ -107,8 +149,19 @@ class VideoApp:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to transfer file: {e}")
 
+    def on_drive_or_mode_change(self, event=None):
+        # Save the current selection index
+        selected_index = self.listbox.curselection()
+        
+        # Perform any actions needed on drive or mode change
+        # ...
+
+        # Restore the previous selection
+        if selected_index:
+            self.listbox.selection_set(selected_index)
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = VideoApp(root)
     root.mainloop()
-
+    
