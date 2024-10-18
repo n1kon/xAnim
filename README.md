@@ -1,5 +1,7 @@
 xAnim is an all in one player and transfer for your XMV videos to you OG XBOX. 
 
+MAke sure you point your cerbios ini to BootAnimPath = C:\BootAnims\XMV Player\BootAnim.xbe
+
 Select you XMV folder, imput your XBOX IP address and select C or HDDO depending on what OS you are using, selecg the video you want to use as you bootanim and transfer to xbox. Its that simple.
 
 This have been build with VLC libs and all credit goes to the makers for the ability to play the videos. No need to install VLC to use this app.
